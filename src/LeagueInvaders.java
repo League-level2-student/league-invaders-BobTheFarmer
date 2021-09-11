@@ -10,9 +10,7 @@ public static final int HEIGHT = 800;
 JFrame frame;
 GamePanel panel;
 
-final int MENU = 0;
-final int GAME = 1;
-final int END = 2;
+
 
 LeagueInvaders() {
 	//UI
@@ -26,6 +24,10 @@ void setup() {
 	frame.setSize(WIDTH, HEIGHT);
 	frame.setVisible(true);
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	frame.addKeyListener(panel);
 	
 }
+
+
+
 }
