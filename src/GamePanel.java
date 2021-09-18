@@ -5,33 +5,44 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+@SuppressWarnings("serial")
 public class GamePanel extends JPanel 
 implements ActionListener, KeyListener {
+	public static BufferedImage image;
+	public static boolean needImage = true;
+	public static boolean gotImage = false;	
 	
 	final int MENU = 0;
 	final int GAME = 1;
 	final int END = 2;
+	
 	int currentState = MENU;
 	
 	Timer frameDraw;
-	
+	Timer alienSpawn;
 	Font titleFont;
 	Font subTitleFont;
 	
-	
 	Rocketship rocket = new Rocketship(250, 700, 50, 50);
+	ObjectManager objectManager = new ObjectManager(rocket);
 	
 	GamePanel() {
 	//Set Variables
 		titleFont = new Font("Oxygen", Font.PLAIN, 48);
 		subTitleFont = new Font("Oxygen", Font.PLAIN, 28);
-		 
 		frameDraw = new Timer(1000/60,this);
 		 
+	//Draw Space
+		if (needImage) {
+		    loadImage ("space.png");
+		}
+		
 	//Other
 		 frameDraw.start();
 		 
@@ -64,12 +75,19 @@ implements ActionListener, KeyListener {
 		
 	}
 	
+	void startGame() {
+		alienSpawn = new Timer(1000, objectManager);
+		alienSpawn.start();
+	}
+	void stopGame() {
+		alienSpawn.stop();
+	}
 	
 	void updateMenuState() {  
 		
 	}
 	void updateGameState() {
-		
+		objectManager.update();
 	}
 	void updateEndState()  {  
 		
@@ -77,8 +95,9 @@ implements ActionListener, KeyListener {
 	
 	void drawMenuState(Graphics g) {
 		//Background
-			g.setColor(Color.BLUE);
-			g.fillRect(0, 0, LeagueInvaders.WIDTH, LeagueInvaders.HEIGHT);
+		g.setColor(Color.BLUE);
+		g.fillRect(0, 0, LeagueInvaders.WIDTH, LeagueInvaders.HEIGHT);
+				
 		//Text
 			g.setFont(titleFont);
 			g.setColor(Color.YELLOW);
@@ -90,12 +109,17 @@ implements ActionListener, KeyListener {
 	}
 	void drawGameState(Graphics g) {
 		//Background
-		g.setColor(Color.BLACK);
-		g.fillRect(0, 0, LeagueInvaders.WIDTH, LeagueInvaders.HEIGHT);
+		if (gotImage) {
+			g.drawImage(image, 0, 0, LeagueInvaders.WIDTH, LeagueInvaders.HEIGHT, null);
+		} else {
+			g.setColor(Color.BLACK);
+			g.fillRect(0, 0, LeagueInvaders.WIDTH, LeagueInvaders.HEIGHT);
+		}
+			
 		
 		
 		//Draw Rocket
-			rocket.draw(g);
+			objectManager.draw(g);
 	}
 	void drawEndState(Graphics g)  {  
 		//Background
@@ -104,7 +128,7 @@ implements ActionListener, KeyListener {
 		//Text
 			g.setFont(titleFont);
 			g.setColor(Color.WHITE);
-			g.drawString("GAME OVER", 50, 300);
+			g.drawString("GAME OVER", 100, 300);
 		
 	 }
 
@@ -114,17 +138,21 @@ implements ActionListener, KeyListener {
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-	
+	//Menus
 		if (e.getKeyCode()==KeyEvent.VK_ENTER) {
 		
 		    if (currentState == END) {
-		    
 		        currentState = MENU;
-		    } else {
+		    } else if(currentState == MENU){
 		        currentState++;
+		        startGame();
+		    } else {
+		    	currentState++;
+		    	stopGame();
 		    }
 		} 
-		
+	//Rocket Controls
+	//Movement
 		if (e.getKeyCode()==KeyEvent.VK_UP) {
 		    rocket.up();
 		}
@@ -137,12 +165,29 @@ implements ActionListener, KeyListener {
 		if (e.getKeyCode()==KeyEvent.VK_LEFT) {
 			rocket.left();
 		}
-		
+	//Shooting
+		if(e.getKeyCode() == KeyEvent.VK_SPACE) {
+			objectManager.addProjectile(rocket.getProjectile());
+			objectManager.addProjectile(rocket.getProjectile2());
+		}
 		
 		
 	}
 	
-//Useless methods
+//Useless methods/Copy and paste meathods
+	
+	void loadImage(String imageFile) {
+	    if (needImage) {
+	        try {
+	            image = ImageIO.read(this.getClass().getResourceAsStream(imageFile));
+		    gotImage = true;
+	        } catch (Exception e) {
+	            
+	        }
+	        needImage = false;
+	    }
+	}
+	
 	@Override public void keyTyped(KeyEvent e) {}
 	@Override public void keyReleased(KeyEvent e) {}
 
