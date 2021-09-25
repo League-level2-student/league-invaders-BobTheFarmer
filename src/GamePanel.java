@@ -8,6 +8,7 @@ import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -88,6 +89,12 @@ implements ActionListener, KeyListener {
 	}
 	void updateGameState() {
 		objectManager.update();
+		if(!rocket.isActive) {
+			currentState = END;
+		}
+		//alienSpawn.setDelay(1000-(objectManager.getScore()*25));
+		
+		
 	}
 	void updateEndState()  {  
 		
@@ -120,6 +127,11 @@ implements ActionListener, KeyListener {
 		
 		//Draw Rocket
 			objectManager.draw(g);
+			
+		//Score
+			g.setFont(subTitleFont);
+			g.setColor(Color.WHITE);
+			g.drawString("Score: " + objectManager.getScore() , 5, 25);
 	}
 	void drawEndState(Graphics g)  {  
 		//Background
@@ -129,7 +141,7 @@ implements ActionListener, KeyListener {
 			g.setFont(titleFont);
 			g.setColor(Color.WHITE);
 			g.drawString("GAME OVER", 100, 300);
-		
+			g.drawString("Score: " + objectManager.getScore() , 130, 360);
 	 }
 
 	
@@ -138,39 +150,46 @@ implements ActionListener, KeyListener {
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-	//Menus
-		if (e.getKeyCode()==KeyEvent.VK_ENTER) {
-		
-		    if (currentState == END) {
-		        currentState = MENU;
-		    } else if(currentState == MENU){
-		        currentState++;
-		        startGame();
-		    } else {
-		    	currentState++;
-		    	stopGame();
-		    }
-		} 
+	
 	//Rocket Controls
 	//Movement
 		if (e.getKeyCode()==KeyEvent.VK_UP) {
 		    rocket.up();
-		}
-		if (e.getKeyCode()==KeyEvent.VK_DOWN) {
+		} else 
+		 if (e.getKeyCode()==KeyEvent.VK_DOWN) {
 		   rocket.down();
-		}
+		} else
 		if (e.getKeyCode()==KeyEvent.VK_RIGHT) {
 			rocket.right();
-		}
+		} else
 		if (e.getKeyCode()==KeyEvent.VK_LEFT) {
 			rocket.left();
 		}
 	//Shooting
 		if(e.getKeyCode() == KeyEvent.VK_SPACE) {
-			objectManager.addProjectile(rocket.getProjectile());
-			objectManager.addProjectile(rocket.getProjectile2());
+			if(currentState==GAME) {
+				objectManager.addProjectile(rocket.getProjectile());
+				objectManager.addProjectile(rocket.getProjectile2());	
+			} else if(currentState==MENU) {
+				JOptionPane.showMessageDialog(null, "Use arrows to dodge aliens\nUse space to shoot\nEnter to start");
+			}
+			
 		}
-		
+		//Menus
+				if (e.getKeyCode()==KeyEvent.VK_ENTER) {
+				
+				    if (currentState == END) {
+				    	rocket = new Rocketship(250, 700, 50, 50);
+				    	objectManager = new ObjectManager(rocket);
+				        currentState = MENU;
+				    } else if(currentState == MENU){
+				        currentState++;
+				        startGame();
+				    } else {
+				    	currentState++;
+				    	stopGame();
+				    }
+				} 
 		
 	}
 	
